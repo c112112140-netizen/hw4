@@ -1,11 +1,8 @@
-這次的hw4是做vga，解析度為640x480@60Hz，有分兩種階段，第一階段是顯示任一圖形(直角三角,矩形)，第二階段為接續hw3乒乓球，將led的。
+這次的hw4是做vga，解析度為640x480@60Hz，有分兩種階段，第一階段是顯示任一圖形(直角三角,矩形)，第二階段為接續hw3乒乓球，vga將顯示led的位置。
 
 在乒乓球遊戲的程式中加入vga：
+水平時脈總共有800個clock，垂直時脈總共有525個clock。透過兩個
 
-VGA_Count：VGA時脈掃描計數器，VGA先掃描水平像素再掃描垂直像素。
-水平時脈總共有800個clock (Visible area: 640 + Front porch: 16 + Sync pulse: 96 + Back porch: 48)，垂直時脈總共有525個clock (Visible area: 480 + Front porch: 10 + Sync pulse: 2 + Back porch: 33)。
-實際能顯示畫面的部分是從Sync pulse + Back porch = VISIBLE_START開始，程式中為了讓設定圖形位置能直覺一些，將掃描counter的值減去其對應的VISIBLE_START來把基準點調整到0。
+圖形顯示：設定圓形參數，透過for迴圈來做到球體出現與LED同步，再透過12bit的RGB值來設定元素顏色。
 
-VGA_Display：設定顯示的畫面元素，我在上面畫了背景、球檯，並且透過for迴圈來做到球體出現與LED同步，再透過4bit的RGB值來設定元素顏色。
-我們平常都習慣使用8bit的RGB值，所以我使用工具網站來做轉換，才將球檯的棕色正確顯示出來。
 影片連結：https://youtu.be/53Yni6CUMRc
