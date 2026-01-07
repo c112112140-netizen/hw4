@@ -19,20 +19,17 @@ module top(
     wire click_r, click_l;
     wire [2:0] state, state1, state2;
     wire [3:0] score_r, score_l;
-
-    // 按鍵去抖 + one-pulse
+	
     button R1(.in(sw_r), .clk(clk), .rst(rst), .click(click_r));
     button L1(.in(sw_l), .clk(clk), .rst(rst), .click(click_l));
-
-    // 同一顆 counter 產生 LED 用慢時脈 + VGA 25MHz
+	
     divclk U1(
         .clk(clk),
         .rst(rst),
         .led_clk(led_clk),
         .vga_clk(vga_clk)
     );
-
-    // 狀態機
+	
     FSM_state U2(
         .clk(clk), .rst(rst),
         .sw_r(click_r), .sw_l(click_l),
@@ -40,8 +37,7 @@ module top(
         .score_r(score_r), .score_l(score_l),
         .state(state), .state1(state1), .state2(state2)
     );
-
-    // LED 移動/顯示
+	
     led_ctr U3(
         .clk(led_clk), .rst(rst),
         .state(state),
@@ -49,15 +45,13 @@ module top(
         .state2(state2),
         .led_r(led_r)
     );
-
-    // 記分
+	
     score_ctr U4(
         .clk(clk), .rst(rst),
         .state(state), .state1(state1),
         .score_r(score_r), .score_l(score_l)
     );
 
-    // VGA 顯示 8 顆圓（用 led_r 當狀態）
     VGA U5(
         .clk(vga_clk),
         .rst(rst),
@@ -315,9 +309,9 @@ module led_ctr(
 endmodule
 
 module VGA(
-    input  wire       clk,      // 25MHz vga_clk
+    input  wire       clk,    
     input  wire       rst,
-    input  wire [7:0] led_r,      // 8 LED state
+    input  wire [7:0] led_r,     
     output reg  [3:0] vga_r,
     output reg  [3:0] vga_g,
     output reg  [3:0] vga_b,
@@ -325,7 +319,6 @@ module VGA(
     output wire       vsync
 );
 
-    // ===== 640x480@60Hz timing (total 800x525) =====
     localparam integer H_SYNC_CYCLES   = 96;
     localparam integer H_BACK_PORCH    = 48;
     localparam integer H_ACTIVE_VIDEO  = 640;
@@ -338,13 +331,12 @@ module VGA(
     localparam integer V_FRONT_PORCH   = 10;
     localparam integer V_TOTAL         = 525;
 
-    localparam integer H_VISIBLE_START = H_SYNC_CYCLES + H_BACK_PORCH; // 144
-    localparam integer V_VISIBLE_START = V_SYNC_CYCLES + V_BACK_PORCH; // 35
+    localparam integer H_VISIBLE_START = H_SYNC_CYCLES + H_BACK_PORCH; 
+    localparam integer V_VISIBLE_START = V_SYNC_CYCLES + V_BACK_PORCH; 
 
     reg [9:0] h_count;
     reg [9:0] v_count;
 
-    // ===== counters =====
     always @(posedge clk or posedge rst) begin
         if (rst) begin
             h_count <= 10'd0;
@@ -360,17 +352,14 @@ module VGA(
         end
     end
 
-    // ===== sync (跟你 VHDL 一樣：前面 low) =====
     assign hsync = (h_count < H_SYNC_CYCLES) ? 1'b0 : 1'b1;
     assign vsync = (v_count < V_SYNC_CYCLES) ? 1'b0 : 1'b1;
 
-    // ===== x,y in active area (0..639, 0..479) =====
     wire signed [11:0] x = $signed({1'b0,h_count}) - H_VISIBLE_START;
     wire signed [11:0] y = $signed({1'b0,v_count}) - V_VISIBLE_START;
 
     wire video_on = (x >= 0 && x < H_ACTIVE_VIDEO && y >= 0 && y < V_ACTIVE_VIDEO);
 
-    // ===== draw 8 circles =====
     integer i;
     integer cx, dx, dy;
     integer dist2;
